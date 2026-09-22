@@ -1,0 +1,17 @@
+Themen
+- Auto created statistics
+	- (NOT) IN
+	- EXISTS
+	- EXCEPT
+	- INTERCEPT
+
+- Incremental Statistics
+- Ascending Key and Statistics
+
+- Troubleshooting real world scenarions with Statistics
+- Locking with Asynchronous Stats Updates!
+
+- Tipps und Tricks
+	- Update Stats with STATS_STREAM
+	Scenario:	Tabelle mit großem Bestand
+			Benötigt werden nur Tagesstatistiken!
