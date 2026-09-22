@@ -23,62 +23,50 @@ GO
 USE demo_db;
 GO
 
+/*
+	Create two auto created statistics on dbo.cusotmers!
+	Note:	Even if you only COMPILE the query the stats
+			will be created!
+
+	PRESS CTRL + L instead of EXECUTE!
+*/
+SELECT	*
+FROM		dbo.customers
+WHERE	c_custkey = 10;
+GO
+
+SELECT	*
+FROM		dbo.customers
+WHERE	c_nationkey = 46;
+GO
+
 /* what statistics do we have in an initial table? */
-SELECT	s.stats_id,
-		s.name,
-        sc.column_list,
-        s.auto_created,
-        s.user_created,
-        s.no_recompute,
-        s.auto_drop
-FROM	sys.stats AS s
-        CROSS APPLY
-        (
-            SELECT  STRING_AGG(c.name, ',')    AS  column_list
-            FROM    sys.stats_columns AS sc
-                    INNER JOIN sys.columns AS c
-                    ON
-                    (
-                        sc.object_id = c.object_id
-                        AND sc.column_id  = c.column_id
-                    )
-            WHERE   s.object_id = sc.object_id
-                    AND s.stats_id = sc.stats_id
-        ) AS sc
-WHERE	s.object_id = OBJECT_ID(N'dbo.customers', N'U');
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.customers', N'U');
 GO
 
 /*
     If there is an existing auto created statistics object in the 
     database it will NOT be deleted if you create an index afterwards!
 */
-BEGIN
-    ALTER TABLE dbo.customers ADD CONSTRAINT pk_customers
-    PRIMARY KEY CLUSTERED (c_custkey);
+ALTER TABLE dbo.customers ADD CONSTRAINT pk_customers
+PRIMARY KEY CLUSTERED (c_custkey);
+GO
 
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.auto_created,
-            s.user_created,
-            s.no_recompute,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	s.object_id = OBJECT_ID(N'dbo.customers', N'U');
-END
+SELECT	stats_id,
+		name,
+		column_list,
+		auto_created,
+		user_created,
+		no_recompute,
+		auto_drop
+FROM		dbo.get_statistics_information(N'dbo.customers', N'U');
 GO
 
 /*
@@ -102,33 +90,18 @@ WHERE   s.object_id = OBJECT_ID(N'dbo.customers', N'U');
 GO
 
 /* We create an index on c_nationkey on dbo.customers */
-BEGIN
-    CREATE NONCLUSTERED INDEX nix_customers_c_nationkey
-    ON dbo.customers (c_nationkey);
+CREATE NONCLUSTERED INDEX nix_customers_c_nationkey
+ON dbo.customers (c_nationkey);
+GO
 
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.auto_created,
-            s.user_created,
-            s.no_recompute,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	s.object_id = OBJECT_ID(N'dbo.customers', N'U');
-END
+SELECT	stats_id,
+		name,
+		column_list,
+		auto_created,
+		user_created,
+		no_recompute,
+		auto_drop
+FROM		dbo.get_statistics_information(N'dbo.customers', N'U');
 GO
 
 /*
@@ -160,30 +133,24 @@ BEGIN
     CLOSE c;
     DEALLOCATE c;
 
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.auto_created,
-            s.user_created,
-            s.no_recompute,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	(
-                s.object_id = OBJECT_ID(N'dbo.orders', N'U')
-                OR s.object_id = OBJECT_ID(N'dbo.customers', N'U')
-            );
+	SELECT	stats_id,
+			name,
+			column_list,
+			auto_created,
+			user_created,
+			no_recompute,
+			auto_drop
+	FROM		dbo.get_statistics_information(N'dbo.customers', N'U')
+
+	UNION ALL
+
+	SELECT	stats_id,
+			name,
+			column_list,
+			auto_created,
+			user_created,
+			no_recompute,
+			auto_drop
+	FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
 END
 GO

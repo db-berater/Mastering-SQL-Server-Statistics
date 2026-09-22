@@ -65,61 +65,54 @@ GO
     on [dbo].[orders] (o_orderdate) for the identification of the measures
     for WINDOWS ADMIN CENTER!
 */
-BEGIN
-    DECLARE @sql_cmd NVARCHAR(MAX);
+DECLARE @sql_cmd NVARCHAR(MAX);
 
-    DECLARE c CURSOR LOCAL READ_ONLY FORWARD_ONLY
-    FOR
-        SELECT  N'DROP STATISTICS dbo.' + QUOTENAME(t.name) + N'.' + QUOTENAME(s.name)
-        FROM    sys.tables AS t
-                INNER JOIN sys.stats AS s
-                ON (t.object_id = s.object_id)
-        WHERE	(
-                    s.object_id = OBJECT_ID(N'dbo.orders', N'U')
-                    OR s.object_id = OBJECT_ID(N'dbo.customers', N'U')
-                )
-                AND s.auto_created = 1;
-
-    OPEN c;
-    FETCH NEXT FROM c INTO @sql_cmd;
-    WHILE @@FETCH_STATUS <> -1
-    BEGIN
-        EXEC sp_executesql @sql_cmd;
-        FETCH NEXT FROM c INTO @sql_cmd;
-    END
-
-    CLOSE c;
-    DEALLOCATE c;
-
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.auto_created,
-            s.user_created,
-            s.no_recompute,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
+DECLARE c CURSOR LOCAL READ_ONLY FORWARD_ONLY
+FOR
+    SELECT  N'DROP STATISTICS dbo.' + QUOTENAME(t.name) + N'.' + QUOTENAME(s.name)
+    FROM    sys.tables AS t
+            INNER JOIN sys.stats AS s
+            ON (t.object_id = s.object_id)
     WHERE	(
                 s.object_id = OBJECT_ID(N'dbo.orders', N'U')
                 OR s.object_id = OBJECT_ID(N'dbo.customers', N'U')
             )
-    ORDER BY
-            s.object_id,
-            s.stats_id;
+            AND s.auto_created = 1;
+
+OPEN c;
+FETCH NEXT FROM c INTO @sql_cmd;
+WHILE @@FETCH_STATUS <> -1
+BEGIN
+    EXEC sp_executesql @sql_cmd;
+    FETCH NEXT FROM c INTO @sql_cmd;
 END
+
+CLOSE c;
+DEALLOCATE c;
+
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop,
+        has_filter,
+        filter_definition
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U')
+
+UNION ALL
+
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop,
+        has_filter,
+        filter_definition
+FROM		dbo.get_statistics_information(N'dbo.customers', N'U')
 GO
 
 /*

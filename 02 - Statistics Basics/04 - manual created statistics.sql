@@ -22,165 +22,83 @@ GO
 USE demo_db;
 GO
 
-/*
-    Check the statistics of the dbo.orders table before we start
-*/
-SELECT	s.stats_id,
-		s.name,
-        sc.column_list,
-        s.auto_created,
-        s.user_created,
-        s.no_recompute,
-        s.auto_drop
-FROM	sys.stats AS s
-        CROSS APPLY
-        (
-            SELECT  STRING_AGG(c.name, ',')    AS  column_list
-            FROM    sys.stats_columns AS sc
-                    INNER JOIN sys.columns AS c
-                    ON
-                    (
-                        sc.object_id = c.object_id
-                        AND sc.column_id  = c.column_id
-                    )
-            WHERE   s.object_id = sc.object_id
-                    AND s.stats_id = sc.stats_id
-        ) AS sc
-WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
+/* what statistics do we have in the table [dbo].[orders]? */
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
 GO
 
-/* create customer stats object with defaults */
-BEGIN
-    DROP STATISTICS dbo.orders.stats_orders_o_orderpriority;
-
-    CREATE STATISTICS stats_orders_o_orderpriority
-    ON dbo.orders (o_orderpriority);
-
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.user_created,
-            s.no_recompute,
-            s.has_filter,
-            s.filter_definition,
-            s.has_persisted_sample,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
-END
+/* create orders stats object on o_orderpriority */
+CREATE STATISTICS stats_orders_o_orderpriority
+ON dbo.orders (o_orderpriority);
 GO
 
-/* create customer stats which will NOT automatically updated */
-BEGIN
-    CREATE STATISTICS stats_orders_o_orderpriority_no_recompute
-    ON dbo.orders (o_orderpriority)
-    WITH
-        NORECOMPUTE;
-
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.user_created,
-            s.no_recompute,
-            s.has_filter,
-            s.filter_definition,
-            s.has_persisted_sample,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
-END
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
 GO
 
-/* create customer stats for a dedicated (filtered) value */
-BEGIN
-    CREATE STATISTICS stats_orders_o_orderpriority_filter
-    ON dbo.orders (o_orderpriority)
-    WHERE   o_orderpriority = '2-HIGH';
 
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.user_created,
-            s.no_recompute,
-            s.has_filter,
-            s.filter_definition,
-            s.has_persisted_sample,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
-END
+/* create custom stats which will NOT automatically updated */
+CREATE STATISTICS stats_orders_o_orderpriority_no_recompute
+ON dbo.orders (o_orderpriority)
+WITH
+    NORECOMPUTE;
 GO
 
-/* create customer stats for a dedicated (filtered) value */
-BEGIN
-    CREATE STATISTICS stats_orders_o_orderpriority_sample_30
-    ON dbo.orders (o_orderpriority)
-    WITH
-        SAMPLE 30 PERCENT,
-        PERSIST_SAMPLE_PERCENT = ON;
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
+GO
 
-    SELECT	s.stats_id,
-		    s.name,
-            sc.column_list,
-            s.user_created,
-            s.no_recompute,
-            s.has_filter,
-            s.filter_definition,
-            s.has_persisted_sample,
-            s.auto_drop
-    FROM	sys.stats AS s
-            CROSS APPLY
-            (
-                SELECT  STRING_AGG(c.name, ',')    AS  column_list
-                FROM    sys.stats_columns AS sc
-                        INNER JOIN sys.columns AS c
-                        ON
-                        (
-                            sc.object_id = c.object_id
-                            AND sc.column_id  = c.column_id
-                        )
-                WHERE   s.object_id = sc.object_id
-                        AND s.stats_id = sc.stats_id
-            ) AS sc
-    WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
-END
+/* create custom stats for a dedicated (filtered) value */
+CREATE STATISTICS stats_orders_o_orderpriority_filter
+ON dbo.orders (o_orderpriority)
+WHERE   o_orderpriority = '2-HIGH';
+GO
+
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop,
+		has_filter,
+		filter_definition
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
+GO
+
+/* create customer stats for a specific sample rate */
+CREATE STATISTICS stats_orders_o_orderpriority_sample_30
+ON dbo.orders (o_orderpriority)
+WITH
+    SAMPLE 30 PERCENT,
+    PERSIST_SAMPLE_PERCENT = ON;
+GO
+
+SELECT	stats_id,
+		name,
+        column_list,
+        user_created,
+        no_recompute,
+        has_filter,
+		has_persisted_sample,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
 GO
