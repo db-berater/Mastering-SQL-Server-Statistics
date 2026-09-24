@@ -75,31 +75,38 @@ GO
 	Let's add another day of orders into the table and check the
 	statistics afterwards
 */
-WITH l
-AS
-(
-	SELECT	MIN(o_orderdate)		AS	next_date
+BEGIN
+	DECLARE	@num_rows	INT = 0;
+
+	WITH l
+	AS
+	(
+		SELECT	MIN(o_orderdate)		AS	next_date
+		FROM		ERP_Demo.dbo.orders AS o
+		WHERE	o_orderdate > (SELECT MAX(o_orderdate) FROM dbo.orders)
+	)
+	INSERT INTO dbo.orders WITH (TABLOCK)
+	(
+		o_orderdate, o_orderkey, o_custkey, o_orderpriority, o_shippriority, 
+		o_clerk, o_orderstatus, o_totalprice, o_comment, o_storekey
+	)
+	SELECT	o.o_orderdate,
+			o.o_orderkey,
+			o.o_custkey,
+			o.o_orderpriority,
+			o.o_shippriority,
+			o.o_clerk,
+			o.o_orderstatus,
+			o.o_totalprice,
+			o.o_comment,
+			o.o_storekey
 	FROM		ERP_Demo.dbo.orders AS o
-	WHERE	o_orderdate > (SELECT MAX(o_orderdate) FROM dbo.orders)
-)
-INSERT INTO dbo.orders WITH (TABLOCK)
-(
-	o_orderdate, o_orderkey, o_custkey, o_orderpriority, o_shippriority, 
-	o_clerk, o_orderstatus, o_totalprice, o_comment, o_storekey
-)
-SELECT	o.o_orderdate,
-		o.o_orderkey,
-		o.o_custkey,
-		o.o_orderpriority,
-		o.o_shippriority,
-		o.o_clerk,
-		o.o_orderstatus,
-		o.o_totalprice,
-		o.o_comment,
-		o.o_storekey
-FROM		ERP_Demo.dbo.orders AS o
-		CROSS JOIN l
-WHERE	o.o_orderdate = l.next_date;
+			CROSS JOIN l
+	WHERE	o.o_orderdate = l.next_date;
+
+	SET	@num_rows = @@ROWCOUNT;
+	RAISERROR ('[%i] rows added to the table dbo.orders', 0, 1, @num_rows) WITH NOWAIT;
+END
 GO
 
 SELECT	s.stats_id,
@@ -140,6 +147,9 @@ FROM		dbo.orders
 WHERE	o_custkey = 1302047;
 GO
 
+EXEC dbo.sp_read_xevent_auto_stats @xevent_name = N'monitor_auto_update_stats';
+GO
+
 SELECT	s.stats_id,
 		s.name,
 		p.last_updated,
@@ -160,6 +170,9 @@ FROM		sys.stats AS s
 WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
 GO
 
+/*
+	Q: Will this query update the statistics?
+*/
 SELECT	o_orderdate,
 		o_orderkey,
 		o_custkey,
@@ -172,6 +185,67 @@ SELECT	o_orderdate,
 		o_storekey
 FROM		dbo.orders
 WHERE	o_orderkey = 11315604;
+GO
+
+EXEC dbo.sp_read_xevent_auto_stats @xevent_name = N'monitor_auto_update_stats';
+GO
+
+SELECT	s.stats_id,
+		s.name,
+		p.last_updated,
+		p.rows,
+		p.rows_sampled,
+		p.modification_counter		AS	mods,
+		CAST
+		(
+			SQRT(1000 * p.rows)
+			AS BIGINT
+		)			AS	next_modification
+FROM		sys.stats AS s
+		CROSS APPLY sys.dm_db_stats_properties
+		(
+			s.object_id,
+			s.stats_id
+		) AS p
+WHERE	s.object_id = OBJECT_ID(N'dbo.orders', N'U');
+GO
+
+/*
+	Using stats on o_orderdate
+*/
+SELECT	o_orderdate,
+		o_orderkey,
+		o_custkey,
+		o_orderpriority,
+		o_shippriority,
+		o_clerk,
+		o_orderstatus,
+		o_totalprice,
+		o_comment,
+		o_storekey
+FROM		dbo.orders
+WHERE	o_orderdate = '2013-01-03'
+ORDER BY
+		o_custkey ASC;
+GO
+
+SELECT	o_orderdate,
+		o_orderkey,
+		o_custkey,
+		o_orderpriority,
+		o_shippriority,
+		o_clerk,
+		o_orderstatus,
+		o_totalprice,
+		o_comment,
+		o_storekey
+FROM		dbo.orders
+WHERE	o_orderdate = '2013-01-02'
+ORDER BY
+		o_custkey ASC;
+GO
+
+EXEC dbo.sp_read_xevent_auto_stats @xevent_name = N'monitor_auto_update_stats';
 GO
 
 SELECT	s.stats_id,

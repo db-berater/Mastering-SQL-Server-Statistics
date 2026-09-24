@@ -102,3 +102,30 @@ SELECT	stats_id,
         auto_drop
 FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
 GO
+
+/*
+    Remove all user created statistics from dbo.orders
+*/
+DECLARE @sql_cmd    NVARCHAR(256);
+
+DECLARE c CURSOR LOCAL FORWARD_ONLY READ_ONLY
+FOR
+    SELECT  N'DROP STATISTICS [dbo].[orders].' + QUOTENAME(name) + N';'
+    FROM    sys.stats AS s
+    WHERE   s.object_id = OBJECT_ID(N'dbo.orders', N'U')
+            AND s.user_created = 1;
+
+OPEN c;
+
+FETCH NEXT FROM c INTO @sql_cmd
+WHILE @@FETCH_STATUS <> -1
+BEGIN
+    PRINT @sql_cmd;
+    EXEC sp_executesql @sql_cmd;
+
+    FETCH NEXT FROM c INTO @sql_cmd;
+END
+
+CLOSE c;
+DEALLOCATE c;
+GO

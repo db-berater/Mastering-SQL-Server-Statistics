@@ -48,7 +48,7 @@ BEGIN
             c_phone,
             c_acctbal,
             c_comment
-    FROM	dbo.customers;
+    FROM		dbo.customers;
 
     UPDATE STATISTICS dbo.customers WITH FULLSCAN;
 
@@ -62,7 +62,11 @@ BEGIN
             stats_rows,
             stats_sampled_rows,
             sample_quote
-    FROM	dbo.get_statistics_columns_info(N'dbo.customers', N'U');
+    FROM		dbo.get_statistics_columns_info
+			(
+				N'dbo.customers',
+				N'U'
+			);
 END
 GO
 

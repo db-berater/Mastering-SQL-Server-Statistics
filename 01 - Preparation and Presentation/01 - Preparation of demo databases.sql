@@ -33,3 +33,17 @@ GO
 SELECT * FROM ERP_Demo.dbo.get_database_help_info();
 SELECT * FROM ERP_Demo.dbo.get_object_help_info(NULL);
 GO
+
+USE ERP_Demo;
+GO
+
+EXEC dbo.sp_create_indexes_customers;
+EXEC dbo.sp_create_indexes_orders N'o_orderkey, o_orderdate';
+GO
+
+
+EXEC ERP_Demo.dbo.sp_create_demo_db
+	@num_of_files = 1,
+	@initial_size_MB = 1024,
+	@use_filegroups = 0;
+GO

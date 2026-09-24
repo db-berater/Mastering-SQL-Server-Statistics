@@ -19,23 +19,6 @@ SET NOCOUNT ON;
 SET XACT_ABORT ON;
 GO
 
-USE ERP_Demo;
-GO
-
-/*
-	Let's create a database first for the storage of data
-
-	Note:	Procedures / Functions are elements of the framework of
-			the demo database ERP_Demo.
-*/
-RAISERROR ('Creating database [demo_db]', 0, 1) WITH NOWAIT;
-
-EXEC dbo.sp_create_demo_db
-	@num_of_files = 1,
-    @initial_size_MB = 1024,
-    @use_filegroups = 0;
-GO
-
 /* Create a table with ~6.500 rows in the demo database */
 RAISERROR ('Creating table [dbo].[orders] in [demo_db]', 0, 1) WITH NOWAIT;
 

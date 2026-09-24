@@ -1,30 +1,5 @@
 /*
 	============================================================================
-	File:		06 - sp_read_xevent_auto_stats.sql
-
-	Summary:	This script creates a stored procedure in master to read the data
-				from extended event "monitor_auto_stats" from the ring buffer.
-
-				THIS SCRIPT IS PART OF THE TRACK:
-					"Workshop - Improve your DBA Skills"
-
-	Version:	1.00.000
-
-	Date:		October 2025
-	Revion:		October 2025
-
-	SQL Server Version: >= 2016
-	============================================================================
-*/
-SET NOCOUNT ON;
-SET XACT_ABORT ON;
-GO
-
-USE master;
-GO
-
-/*
-	============================================================================
 	File:		02 - dbo.sp_read_xevent_auto_stats.sql
 
 	Summary:		This script creates the required stored procedure in demo_db
@@ -71,6 +46,7 @@ BEGIN
 		SELECT	x.event_data.value('(@timestamp)[1]','datetime')									AS	[time],
 				x.event_data.value('(@name)[1]', 'VARCHAR(128)')									AS	[Event_name],
 				x.event_data.value('(data[@name="status"]/value)[1]','VARCHAR(128)')				AS	[status],
+				x.event_data.value('(data[@name="object_id"]/value)[1]', 'INT')					AS	[object_id],
 				x.event_data.value('(data[@name="statistics_list"]/value)[1]','VARCHAR(256)')	AS	[statistics_list],
 				x.event_data.value('(data[@name="duration"]/value)[1]','BIGINT')					AS	[duration],
 				x.event_data.value('(data[@name="sample_percentage"]/value)[1]','SMALLINT')		AS	[sample_rate],
@@ -81,6 +57,7 @@ BEGIN
 	SELECT	DISTINCT
 			xe.Event_name,
 			xe.time,
+			xe.object_id,
 			xe.statistics_list,
 			CAST(xe.duration / 1000.0 AS NUMERIC(10, 2))		AS	duration_ms,
 			xe.sample_rate,
@@ -93,11 +70,10 @@ BEGIN
 				WHERE	name = N'statistics_update_status'
 			) AS kv
 			ON (xe.status = kv.map_key)
-	--WHERE	xe.status = 1
+			INNER JOIN sys.tables AS t
+			ON (xe.object_id = t.object_id)
+	WHERE	t.is_ms_shipped = 0
 	ORDER BY
 			xe.time ASC;
 END
-GO
-
-EXEC master..sp_ms_marksystemobject N'dbo.sp_read_xevent_auto_stats';
 GO

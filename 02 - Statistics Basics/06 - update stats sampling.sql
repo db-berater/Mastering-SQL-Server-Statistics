@@ -197,7 +197,7 @@ BEGIN
                 @stats_sample_rate_percent      = CAST (ISNULL(sp.rows_sampled * 100.0 / sp.rows, 0) AS INT),
                 @stats_modification_counter     = ISNULL(sp.modification_counter, 0),
 		        @stats_required_rows_for_update = CAST(SQRT(ISNULL(sp.rows, 0) * 1000) AS INT)
-        FROM	sys.partitions AS p
+        FROM		sys.partitions AS p
 		        INNER JOIN sys.indexes AS i
 		        ON
 		        (

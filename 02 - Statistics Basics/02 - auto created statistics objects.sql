@@ -98,6 +98,20 @@ GO
 /*
     statistics will be created automatically when using DISTINCT
 */
+SELECT	o_orderpriority
+FROM		dbo.orders;
+GO
+
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.orders', N'U');
+GO
+
 SELECT  DISTINCT
         o_orderpriority
 FROM    dbo.orders;
@@ -225,6 +239,26 @@ SELECT	stats_id,
 FROM		dbo.get_statistics_information(N'dbo.customers', N'U');
 GO
 
+ALTER TABLE dbo.customers
+ADD CONSTRAINT pk_customers PRIMARY KEY CLUSTERED (c_custkey)
+WITH
+(
+	DATA_COMPRESSION = PAGE,
+	SORT_IN_TEMPDB = ON
+);
+GO
+
+SELECT	stats_id,
+        name,
+        column_list,
+        auto_created,
+        user_created,
+        no_recompute,
+        auto_drop
+FROM		dbo.get_statistics_information(N'dbo.customers', N'U');
+GO
+
+
 /*
     Remove all auto created statistics from dbo.orders
 */
@@ -251,3 +285,7 @@ END
 CLOSE c;
 DEALLOCATE c;
 GO
+
+ALTER TABLE dbo.customers DROP CONSTRAINT pk_customers;
+GO
+

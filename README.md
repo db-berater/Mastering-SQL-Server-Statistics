@@ -58,38 +58,27 @@ This folder contains all Powerpoint Presentations required for this workshop
 
 NOTE: All Stored Procedures will automatically be created when you restore the ERP_Demo Database by script "[01 - Preparation of demo database]."
 
-# 02 - Analysis Tools
-This folder contains workloads/demos to demonstrate the following Analysis Tools
-+ Query Store
-+ Windows Admin Center
-+ Resource Monitor
-+ Extended Events
+# 02 - Statistics Basics
+This folder contains examples for the basics of statistics
++ introduction to statistics
++ automatic created statistics
++ index created statistics
++ manuall created statistics
++ update rules for statistics
++ sampling rates for statistics
 
-# 3 - DBA Tasks
-This folder contains a separate folder for each DBA task, containing all scripts that have a "Preparation" -> "Demo" and a "Cleanup" for the corresponding topic.
-Depending on the scope, several demo scripts may be present in the folder.
-## 01 - Backup and Restore
-Demos for Backup Scenarios
-## 02 - Locking and Blocking
-Demos for Locking and Blocking of processes
-## 03 - Parameter Sniffing
-Demos for Problems with Parameter Sniffing and possible solutions
-## 04 - Wait Stats Analysis
-Demos for different wait types
-+ CXPACKET
-+ SOS_SCHEDULER_YIELD
-+ THREADPOOL
-+ ASYNC_NETWORK_IO
-## 05 - Indexes and Statistics
-This folder contains a complex demos about the internal structure of indexes and problems with PAGE_SPLIT and fragmentation. Two different fragmentation types are covered:
-+ Logical Fragmentation
-+ Physical Fragmentation
-# 60 - Windows Admin Center
-During the workshop, various scenarios will be examined for performance bottlenecks. We will use the Windows Admin Center for this purpose. The folder contains dedicated monitoring templates for all demonstrations.
-**Note**
-The author performed the configuration using a German operating system. Not all templates have been modified for English operating systems.
+# 3 - Statistics Internals
+This folder contains examples for evaluation of internals of statistics
++ DBCC SHOW_STATISTICS
++ new dmv / dmf for statistics evaluation
 
-# 70 - SQL Query Stress
+#4 - Demos
+This folder is part of frequent changes depending on feedback of the audience!
++ why you should use filtered stats
++ how dows trivial plans have an impact on stats
++ tbc...
+
+# 60 - SQL Query Stress
 Templates for using SQLQueryStress to perform load testing on Microsoft SQL Server. The templates use the names of the DBA tasks (see structure above).
 All templates reference a SQL Server Instance named "SQLServer". It is recommended to create a SQL Alias with this name.
 This prevents you from changing all templates with the name of your Microsoft SQL Server Instance.
@@ -108,14 +97,22 @@ This prevents you from changing all templates with the name of your Microsoft SQ
 	}
 }
 ```
-# 80 - Extended Events
+# 70 - Extended Events
 Scripts for the implementation of Extended Events for the different scenarios.
 All extended events are written for "LIVE WATCHING" and will have no target file for saving the results.
+
 Some Extended Events are using the Ring Buffer Object to read data from.
 In this case you can use the stored procedures master..sp_read_xevent_...
+
 These stored procedures will be implemented in the preparation phase from script
+
 [01 - Preparation and Presentation]\[01 - Preparation of demo databases.sql]
 
-# 90 - Tools and Scripts
+# 80 - Windows Admin Center
+During the workshop, various scenarios will be examined for performance bottlenecks. We will use the Windows Admin Center for this purpose. The folder contains dedicated monitoring templates for all demonstrations.
+**Note**
+The author performed the configuration using a German operating system. Not all templates have been modified for English operating systems.
+
+# 90 - Miscelleanous
 + Maintenance Solution from [Ola Hallengren](https://ola.hallengren.com/)
 + sp_whoisactive from [Adam Machanic](https://github.com/amachanic/sp_whoisactive)
